@@ -23,6 +23,7 @@
 #ifndef HASHTABLE_H_
 #define HASHTABLE_H_
 
+/* GENERAL PURPOSE FUNCTIONS */
 typedef struct hashtable_entry_s {
   char *key; //this entry key tag
   void *value; //this entry value
@@ -36,6 +37,7 @@ typedef struct hashtable_s {
 
 hashtable_st* hashtable_init();
 void hashtable_destroy(hashtable_st *hashtable);
+void hashtable_destroy_dict(hashtable_st *hashtable);
 void hashtable_build(hashtable_st *hashtable, const size_t kNum_index);
 hashtable_entry_st *hashtable_get_entry(hashtable_st *hashtable, const char *kKey);
 void *hashtable_get(hashtable_st *hashtable, const char *kKey);

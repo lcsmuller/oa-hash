@@ -64,6 +64,40 @@ hashtable_destroy(hashtable_st *hashtable)
   hashtable = NULL;
 }
 
+/* destroys keys and values aswell */
+void
+hashtable_destroy_dict(hashtable_st *hashtable)
+{
+  for (size_t i=0; i < hashtable->num_bucket; ++i){
+    if (NULL == hashtable->bucket[i])
+      continue;
+
+    hashtable_entry_st *entry = hashtable->bucket[i];
+    hashtable_entry_st *entry_prev;
+    while (NULL != entry){
+      entry_prev = entry;
+      entry = entry->next;
+
+      free(entry_prev->key);
+      entry_prev->key = NULL;
+
+      void **p_ptr = entry_prev->value;
+      if (NULL != *p_ptr){
+        free(*p_ptr);
+        *p_ptr = NULL;
+      }
+
+      free(entry_prev);
+      entry_prev = NULL;
+    }
+  }
+  free(hashtable->bucket);
+  hashtable->bucket = NULL;
+  
+  free(hashtable);
+  hashtable = NULL;
+}
+
 static size_t
 _hashtable_genhash(const char *kKey, const size_t kNum_bucket)
 {
