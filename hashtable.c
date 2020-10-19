@@ -206,12 +206,9 @@ dictionary_destroy(dictionary_st *dictionary)
       entry_prev->key = NULL;
       
       //free value if its tagged for freeing
-      if (entry_prev->to_free){
-        void **p_ptr = entry_prev->value;
-        if (NULL != p_ptr){
-          free(*p_ptr);
-          *p_ptr = NULL;
-        }
+      if (entry_prev->to_free && NULL != entry_prev->value){
+        free(entry_prev->value);
+        entry_prev->value = NULL;
       }
 
       free(entry_prev);
@@ -258,12 +255,9 @@ dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, 
   dictionary_entry_st *entry_prev;
   while (NULL != entry){
     if (STREQ(entry->key, kKey)){
-      if (entry_prev->to_free){
-        void **p_ptr = entry_prev->value;
-        if (NULL != p_ptr){
-          free(*p_ptr);
-          *p_ptr = NULL;
-        }
+      if (entry->to_free && NULL != entry->value){
+        free(entry->value);
+        entry->value = NULL;
       }
       entry->value = (void*)kValue;
       entry->to_free = to_free;
@@ -300,12 +294,9 @@ dictionary_remove(dictionary_st *dictionary, const char *kKey)
       entry->key = NULL;
       
       //free value if its tagged for freeing
-      if (entry_prev->to_free){
-        void **p_ptr = entry_prev->value;
-        if (NULL != p_ptr){
-          free(*p_ptr);
-          *p_ptr = NULL;
-        }
+      if (entry->to_free && NULL != entry->value){
+        free(entry->value);
+        entry->value = NULL;
       }
 
       free(entry);
@@ -320,17 +311,16 @@ dictionary_remove(dictionary_st *dictionary, const char *kKey)
   }
 }
 
-/* this should only be called if dictionary_entry value type is
-    a pointer to a string char ** */
-char*
-dictionary_new_string(dictionary_st *dictionary, const char *kKey, char *src)
+void*
+dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value)
 {
-  char **p_dest = dictionary_get(dictionary, kKey);
+  dictionary_entry_st *entry = (dictionary_entry_st*)hashtable_get_entry((hashtable_st*)dictionary, kKey);
 
-  if (NULL == p_dest) return NULL; 
+  if (NULL != entry->value){
+    free(entry->value);
+    entry->value = NULL;
+  }
+  entry->value = new_value;
 
-  free(*p_dest);
-  *p_dest = src;
-
-  return *p_dest;
+  return entry->value;
 }
