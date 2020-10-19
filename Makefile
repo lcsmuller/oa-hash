@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Werror -pedantic -g
+CFLAGS = -Wall -Werror -pedantic -g -fPIC
 
 .PHONY : clean
 
