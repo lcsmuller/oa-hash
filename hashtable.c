@@ -324,3 +324,23 @@ dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value)
 
   return entry->value;
 }
+
+/* assume value is string and return its value converted to a long long */
+long long
+dictionary_get_strtoll(dictionary_st *dictionary, const char *kKey)
+{
+  char *str = dictionary_get(dictionary, kKey);  
+  if (NULL == str) return 0;
+
+  return strtoll(str, NULL, 10);
+}
+
+/* assume value is string and return its value converted to a double */
+double
+dictionary_get_strtod(dictionary_st *dictionary, const char *kKey)
+{
+  char *str = dictionary_get(dictionary, kKey);  
+  if (NULL == str) return 0.0;
+
+  return strtod(str, NULL);
+}

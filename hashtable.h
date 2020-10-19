@@ -66,6 +66,8 @@ void dictionary_destroy(dictionary_st *dictionary);
 void *dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, _Bool to_free);
 void dictionary_remove(dictionary_st *dictionary, const char *kKey);
 void *dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value);
+long long dictionary_get_strtoll(dictionary_st *dictionary, const char *kKey);
+double dictionary_get_strtod(dictionary_st *dictionary, const char *kKey);
 
 
 #endif
