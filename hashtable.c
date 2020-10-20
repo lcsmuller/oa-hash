@@ -255,7 +255,7 @@ dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, 
   while (NULL != entry){
     if (STREQ(entry->key, kKey)){
       if (entry->free_cb && NULL != entry->value){
-        (*entry_prev->free_cb)(entry_prev->value);
+        (*entry->free_cb)(entry->value);
       }
 
       entry->value = (void*)kValue;
@@ -295,7 +295,7 @@ dictionary_remove(dictionary_st *dictionary, const char *kKey)
       
       //free value if its tagged for freeing
       if (entry->free_cb && NULL != entry->value){
-        (*entry_prev->free_cb)(entry_prev->value);
+        (*entry->free_cb)(entry->value);
       }
 
       free(entry);
@@ -316,9 +316,8 @@ dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value)
   /* this works, because dictionary and hashtable structs are aligned */
   dictionary_entry_st *entry = (dictionary_entry_st*)_hashtable_get_entry((hashtable_st*)dictionary, kKey);
 
-  if (NULL != entry->value){
-    free(entry->value);
-    entry->value = NULL;
+  if (entry->free_cb && NULL != entry->value){
+    (*entry->free_cb)(entry->value);
   }
   entry->value = new_value;
 
