@@ -37,7 +37,6 @@ typedef struct hashtable_s {
 hashtable_st* hashtable_init();
 void hashtable_destroy(hashtable_st *hashtable);
 void hashtable_build(hashtable_st *hashtable, const size_t kNum_index);
-hashtable_entry_st *hashtable_get_entry(hashtable_st *hashtable, const char *kKey);
 void *hashtable_get(hashtable_st *hashtable, const char *kKey);
 void *hashtable_set(hashtable_st *hashtable, const char *kKey, const void *kValue);
 void hashtable_remove(hashtable_st *hashtable, const char *kKey);
@@ -46,7 +45,7 @@ typedef struct dictionary_entry_s {
   char *key; //this entry key tag
   void *value; //this entry value
   struct dictionary_entry_s *next; //next entry pointer for when keys don't match
-  _Bool to_free; //set to true to be freed on dictionary_destroy()
+  void (*free_cb)(void*); //the destructor callback function for value, NULL if none
 } dictionary_entry_st;
 
 /* basically a hashtable with some extra functionalities
@@ -63,7 +62,7 @@ void dictionary_destroy(dictionary_st *dictionary);
 
 #define dictionary_build(dict, num_index) hashtable_build((hashtable_st*)dict, num_index)
 #define dictionary_get(dict, key) hashtable_get((hashtable_st*)dict, key)
-void *dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, _Bool to_free);
+void *dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, void (*free_cb)(void*));
 void dictionary_remove(dictionary_st *dictionary, const char *kKey);
 void *dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value);
 long long dictionary_get_strtoll(dictionary_st *dictionary, const char *kKey);

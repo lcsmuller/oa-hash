@@ -102,7 +102,7 @@ hashtable_build(hashtable_st *hashtable, const size_t kNum_index)
 }
 
 hashtable_entry_st*
-hashtable_get_entry(hashtable_st *hashtable, const char *kKey)
+_hashtable_get_entry(hashtable_st *hashtable, const char *kKey)
 {
   if (0 == hashtable->num_bucket) return NULL;
 
@@ -122,7 +122,7 @@ hashtable_get_entry(hashtable_st *hashtable, const char *kKey)
 void*
 hashtable_get(hashtable_st *hashtable, const char *kKey)
 {
-  hashtable_entry_st *entry = hashtable_get_entry(hashtable, kKey);
+  hashtable_entry_st *entry = _hashtable_get_entry(hashtable, kKey);
   return (NULL != entry) ? entry->value : NULL;
 }
 
@@ -206,9 +206,8 @@ dictionary_destroy(dictionary_st *dictionary)
       entry_prev->key = NULL;
       
       //free value if its tagged for freeing
-      if (entry_prev->to_free && NULL != entry_prev->value){
-        free(entry_prev->value);
-        entry_prev->value = NULL;
+      if (entry_prev->free_cb && NULL != entry_prev->value){
+        (*entry_prev->free_cb)(entry_prev->value);
       }
 
       free(entry_prev);
@@ -223,7 +222,7 @@ dictionary_destroy(dictionary_st *dictionary)
 }
 
 static dictionary_entry_st*
-_dictionary_pair(const char *kKey, const void *kValue, _Bool to_free)
+_dictionary_pair(const char *kKey, const void *kValue, void (*free_cb)(void*))
 {
   dictionary_entry_st *new_entry = calloc(1, sizeof *new_entry);
   assert(NULL != new_entry);
@@ -233,20 +232,20 @@ _dictionary_pair(const char *kKey, const void *kValue, _Bool to_free)
 
   new_entry->key = set_key;
   new_entry->value = (void*)kValue;
-  new_entry->to_free = to_free;
+  new_entry->free_cb = free_cb;
 
   return new_entry;
 }
 
 /* unlike hashtable_set, if a value is already set it will free it first and then assign a new one */
 void*
-dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, _Bool to_free)
+dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, void (*free_cb)(void*))
 {
   size_t slot = _hashtable_genhash(kKey, dictionary->num_bucket);
 
   dictionary_entry_st *entry = dictionary->bucket[slot];
   if (NULL == entry){
-    dictionary->bucket[slot] = _dictionary_pair(kKey, kValue, to_free);
+    dictionary->bucket[slot] = _dictionary_pair(kKey, kValue, free_cb);
     ++dictionary->len;
 
     return dictionary->bucket[slot]->value;
@@ -255,19 +254,20 @@ dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, 
   dictionary_entry_st *entry_prev;
   while (NULL != entry){
     if (STREQ(entry->key, kKey)){
-      if (entry->to_free && NULL != entry->value){
-        free(entry->value);
-        entry->value = NULL;
+      if (entry->free_cb && NULL != entry->value){
+        (*entry_prev->free_cb)(entry_prev->value);
       }
+
       entry->value = (void*)kValue;
-      entry->to_free = to_free;
+      entry->free_cb = free_cb;
+
       return entry->value;
     }
     entry_prev = entry;
     entry = entry->next;
   }
 
-  entry_prev->next = _dictionary_pair(kKey, kValue, to_free);
+  entry_prev->next = _dictionary_pair(kKey, kValue, free_cb);
   ++dictionary->len;
 
   return (void*)kValue;
@@ -294,9 +294,8 @@ dictionary_remove(dictionary_st *dictionary, const char *kKey)
       entry->key = NULL;
       
       //free value if its tagged for freeing
-      if (entry->to_free && NULL != entry->value){
-        free(entry->value);
-        entry->value = NULL;
+      if (entry->free_cb && NULL != entry->value){
+        (*entry_prev->free_cb)(entry_prev->value);
       }
 
       free(entry);
@@ -314,7 +313,8 @@ dictionary_remove(dictionary_st *dictionary, const char *kKey)
 void*
 dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value)
 {
-  dictionary_entry_st *entry = (dictionary_entry_st*)hashtable_get_entry((hashtable_st*)dictionary, kKey);
+  /* this works, because dictionary and hashtable structs are aligned */
+  dictionary_entry_st *entry = (dictionary_entry_st*)_hashtable_get_entry((hashtable_st*)dictionary, kKey);
 
   if (NULL != entry->value){
     free(entry->value);
