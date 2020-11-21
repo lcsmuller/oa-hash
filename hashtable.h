@@ -27,46 +27,46 @@ typedef struct hashtable_entry_s {
   char *key; //this entry key tag
   void *value; //this entry value
   struct hashtable_entry_s *next; //next entry pointer for when keys don't match
-} hashtable_entry_st;
+} hashtable_entry_t;
 
 typedef struct hashtable_s {
-  hashtable_entry_st **bucket;
+  hashtable_entry_t **bucket;
   size_t num_bucket;
-} hashtable_st;
+} hashtable_t;
 
-hashtable_st* hashtable_init();
-void hashtable_destroy(hashtable_st *hashtable);
-void hashtable_build(hashtable_st *hashtable, const size_t kNum_index);
-void *hashtable_get(hashtable_st *hashtable, const char *kKey);
-void *hashtable_set(hashtable_st *hashtable, const char *kKey, const void *kValue);
-void hashtable_remove(hashtable_st *hashtable, const char *kKey);
+hashtable_t* hashtable_init();
+void hashtable_destroy(hashtable_t *hashtable);
+void hashtable_build(hashtable_t *hashtable, const size_t kNum_index);
+void *hashtable_get(hashtable_t *hashtable, const char *key);
+void *hashtable_set(hashtable_t *hashtable, const char *key, const void *value);
+void hashtable_remove(hashtable_t *hashtable, const char *key);
 
 typedef struct dictionary_entry_s {
   char *key; //this entry key tag
   void *value; //this entry value
   struct dictionary_entry_s *next; //next entry pointer for when keys don't match
   void (*free_cb)(void*); //the destructor callback function for value, NULL if none
-} dictionary_entry_st;
+} dictionary_entry_t;
 
 /* basically a hashtable with some extra functionalities
     it will allocate the key and free it up for you, also
     allows to pass a value that may be tagged for being freed */
 typedef struct dictionary_s {
-  dictionary_entry_st **bucket;
+  dictionary_entry_t **bucket;
   size_t num_bucket;
   size_t len;
-} dictionary_st;
+} dictionary_t;
 
-dictionary_st* dictionary_init();
-void dictionary_destroy(dictionary_st *dictionary);
+dictionary_t* dictionary_init();
+void dictionary_destroy(dictionary_t *dictionary);
 
-#define dictionary_build(dict, num_index) hashtable_build((hashtable_st*)dict, num_index)
-#define dictionary_get(dict, key) hashtable_get((hashtable_st*)dict, key)
-void *dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, void (*free_cb)(void*));
-void dictionary_remove(dictionary_st *dictionary, const char *kKey);
-void *dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value);
-long long dictionary_get_strtoll(dictionary_st *dictionary, const char *kKey);
-double dictionary_get_strtod(dictionary_st *dictionary, const char *kKey);
+#define dictionary_build(dict, num_index) hashtable_build((hashtable_t*)dict, num_index)
+#define dictionary_get(dict, key) hashtable_get((hashtable_t*)dict, key)
+void *dictionary_set(dictionary_t *dictionary, const char *key, const void *value, void (*free_cb)(void*));
+void dictionary_remove(dictionary_t *dictionary, const char *key);
+void *dictionary_replace(dictionary_t *dictionary, const char *key, void *new_value);
+long long dictionary_get_strtoll(dictionary_t *dictionary, const char *key);
+double dictionary_get_strtod(dictionary_t *dictionary, const char *key);
 
 
 #endif

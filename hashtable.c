@@ -31,24 +31,24 @@
 #define STREQ(src, dest) (0 == strcmp(src, dest))
 #endif
 
-hashtable_st*
+hashtable_t*
 hashtable_init()
 {
-  hashtable_st *new_hashtable = calloc(1, sizeof *new_hashtable);
+  hashtable_t *new_hashtable = calloc(1, sizeof *new_hashtable);
   assert(NULL != new_hashtable);
 
   return new_hashtable;
 }
 
 void
-hashtable_destroy(hashtable_st *hashtable)
+hashtable_destroy(hashtable_t *hashtable)
 {
   for (size_t i=0; i < hashtable->num_bucket; ++i){
     if (NULL == hashtable->bucket[i])
       continue;
 
-    hashtable_entry_st *entry = hashtable->bucket[i];
-    hashtable_entry_st *entry_prev;
+    hashtable_entry_t *entry = hashtable->bucket[i];
+    hashtable_entry_t *entry_prev;
     while (NULL != entry){
       entry_prev = entry;
       entry = entry->next;
@@ -65,52 +65,52 @@ hashtable_destroy(hashtable_st *hashtable)
 }
 
 static size_t
-_hashtable_genhash(const char *kKey, const size_t kNum_bucket)
+_hashtable_genhash(const char *key, const size_t num_bucket)
 {
   size_t slot = 0;
-  size_t key_len = strlen(kKey);
+  size_t key_len = strlen(key);
 
   //@todo learn different implementations and improvements
   for (size_t i=0; i < key_len; ++i){
-    slot = slot * 37 + kKey[i];
+    slot = slot * 37 + key[i];
   }
 
-  slot %= kNum_bucket;
+  slot %= num_bucket;
 
   return slot;
 }
 
-static hashtable_entry_st*
-_hashtable_pair(const char *kKey, const void *kValue)
+static hashtable_entry_t*
+_hashtable_pair(const char *key, const void *value)
 {
-  hashtable_entry_st *new_entry = calloc(1, sizeof *new_entry);
+  hashtable_entry_t *new_entry = calloc(1, sizeof *new_entry);
   assert(NULL != new_entry);
 
-  new_entry->key = (char*)kKey;
-  new_entry->value = (void*)kValue;
+  new_entry->key = (char*)key;
+  new_entry->value = (void*)value;
 
   return new_entry;
 }
 
 void
-hashtable_build(hashtable_st *hashtable, const size_t kNum_index)
+hashtable_build(hashtable_t *hashtable, const size_t num_index)
 {
-  hashtable->num_bucket = kNum_index;
+  hashtable->num_bucket = num_index;
 
   hashtable->bucket = calloc(1, hashtable->num_bucket * sizeof *hashtable->bucket);
   assert(NULL != hashtable->bucket);
 }
 
-hashtable_entry_st*
-_hashtable_get_entry(hashtable_st *hashtable, const char *kKey)
+hashtable_entry_t*
+_hashtable_get_entry(hashtable_t *hashtable, const char *key)
 {
   if (0 == hashtable->num_bucket) return NULL;
 
-  size_t slot = _hashtable_genhash(kKey, hashtable->num_bucket);
+  size_t slot = _hashtable_genhash(key, hashtable->num_bucket);
 
-  hashtable_entry_st *entry = hashtable->bucket[slot];
+  hashtable_entry_t *entry = hashtable->bucket[slot];
   while (NULL != entry){ //try to find key and return it
-    if (STREQ(entry->key, kKey)){
+    if (STREQ(entry->key, key)){
       return entry;
     }
     entry = entry->next;
@@ -120,48 +120,48 @@ _hashtable_get_entry(hashtable_st *hashtable, const char *kKey)
 }
 
 void*
-hashtable_get(hashtable_st *hashtable, const char *kKey)
+hashtable_get(hashtable_t *hashtable, const char *key)
 {
-  hashtable_entry_st *entry = _hashtable_get_entry(hashtable, kKey);
+  hashtable_entry_t *entry = _hashtable_get_entry(hashtable, key);
   return (NULL != entry) ? entry->value : NULL;
 }
 
 void*
-hashtable_set(hashtable_st *hashtable, const char *kKey, const void *kValue)
+hashtable_set(hashtable_t *hashtable, const char *key, const void *value)
 {
-  size_t slot = _hashtable_genhash(kKey, hashtable->num_bucket);
+  size_t slot = _hashtable_genhash(key, hashtable->num_bucket);
 
-  hashtable_entry_st *entry = hashtable->bucket[slot];
+  hashtable_entry_t *entry = hashtable->bucket[slot];
   if (NULL == entry){
-    hashtable->bucket[slot] = _hashtable_pair(kKey, kValue);
+    hashtable->bucket[slot] = _hashtable_pair(key, value);
     return hashtable->bucket[slot]->value;
   }
 
-  hashtable_entry_st *entry_prev;
+  hashtable_entry_t *entry_prev;
   while (NULL != entry){
-    if (STREQ(entry->key, kKey)){
+    if (STREQ(entry->key, key)){
       return entry->value;
     }
     entry_prev = entry;
     entry = entry->next;
   }
 
-  entry_prev->next = _hashtable_pair(kKey, kValue);
+  entry_prev->next = _hashtable_pair(key, value);
 
-  return (void*)kValue;
+  return (void*)value;
 }
 
 void
-hashtable_remove(hashtable_st *hashtable, const char *kKey)
+hashtable_remove(hashtable_t *hashtable, const char *key)
 {
   if (0 == hashtable->num_bucket) return;
 
-  size_t slot = _hashtable_genhash(kKey, hashtable->num_bucket);
+  size_t slot = _hashtable_genhash(key, hashtable->num_bucket);
 
-  hashtable_entry_st *entry = hashtable->bucket[slot];
-  hashtable_entry_st *entry_prev = NULL;
+  hashtable_entry_t *entry = hashtable->bucket[slot];
+  hashtable_entry_t *entry_prev = NULL;
   while (NULL != entry){
-    if (STREQ(entry->key, kKey)){
+    if (STREQ(entry->key, key)){
       if (NULL != entry_prev){
         entry_prev->next = entry->next; 
       } else {
@@ -179,10 +179,10 @@ hashtable_remove(hashtable_st *hashtable, const char *kKey)
   }
 }
 
-dictionary_st*
+dictionary_t*
 dictionary_init()
 {
-  dictionary_st *new_dictionary = calloc(1, sizeof *new_dictionary);
+  dictionary_t *new_dictionary = calloc(1, sizeof *new_dictionary);
   assert(NULL != new_dictionary);
 
   return new_dictionary;
@@ -190,14 +190,14 @@ dictionary_init()
 
 /* destroys keys and values aswell */
 void
-dictionary_destroy(dictionary_st *dictionary)
+dictionary_destroy(dictionary_t *dictionary)
 {
   for (size_t i=0; i < dictionary->num_bucket; ++i){
     if (NULL == dictionary->bucket[i])
       continue;
 
-    dictionary_entry_st *entry = dictionary->bucket[i];
-    dictionary_entry_st *entry_prev;
+    dictionary_entry_t *entry = dictionary->bucket[i];
+    dictionary_entry_t *entry_prev;
     while (NULL != entry){
       entry_prev = entry;
       entry = entry->next;
@@ -221,17 +221,17 @@ dictionary_destroy(dictionary_st *dictionary)
   dictionary = NULL;
 }
 
-static dictionary_entry_st*
-_dictionary_pair(const char *kKey, const void *kValue, void (*free_cb)(void*))
+static dictionary_entry_t*
+_dictionary_pair(const char *key, const void *value, void (*free_cb)(void*))
 {
-  dictionary_entry_st *new_entry = calloc(1, sizeof *new_entry);
+  dictionary_entry_t *new_entry = calloc(1, sizeof *new_entry);
   assert(NULL != new_entry);
 
-  char *set_key = strndup(kKey, strlen(kKey));
+  char *set_key = strndup(key, strlen(key));
   assert(NULL != set_key);
 
   new_entry->key = set_key;
-  new_entry->value = (void*)kValue;
+  new_entry->value = (void*)value;
   new_entry->free_cb = free_cb;
 
   return new_entry;
@@ -239,26 +239,26 @@ _dictionary_pair(const char *kKey, const void *kValue, void (*free_cb)(void*))
 
 /* unlike hashtable_set, if a value is already set it will free it first and then assign a new one */
 void*
-dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, void (*free_cb)(void*))
+dictionary_set(dictionary_t *dictionary, const char *key, const void *value, void (*free_cb)(void*))
 {
-  size_t slot = _hashtable_genhash(kKey, dictionary->num_bucket);
+  size_t slot = _hashtable_genhash(key, dictionary->num_bucket);
 
-  dictionary_entry_st *entry = dictionary->bucket[slot];
+  dictionary_entry_t *entry = dictionary->bucket[slot];
   if (NULL == entry){
-    dictionary->bucket[slot] = _dictionary_pair(kKey, kValue, free_cb);
+    dictionary->bucket[slot] = _dictionary_pair(key, value, free_cb);
     ++dictionary->len;
 
     return dictionary->bucket[slot]->value;
   }
 
-  dictionary_entry_st *entry_prev;
+  dictionary_entry_t *entry_prev;
   while (NULL != entry){
-    if (STREQ(entry->key, kKey)){
+    if (STREQ(entry->key, key)){
       if (entry->free_cb && NULL != entry->value){
         (*entry->free_cb)(entry->value);
       }
 
-      entry->value = (void*)kValue;
+      entry->value = (void*)value;
       entry->free_cb = free_cb;
 
       return entry->value;
@@ -267,23 +267,23 @@ dictionary_set(dictionary_st *dictionary, const char *kKey, const void *kValue, 
     entry = entry->next;
   }
 
-  entry_prev->next = _dictionary_pair(kKey, kValue, free_cb);
+  entry_prev->next = _dictionary_pair(key, value, free_cb);
   ++dictionary->len;
 
-  return (void*)kValue;
+  return (void*)value;
 }
 
 void
-dictionary_remove(dictionary_st *dictionary, const char *kKey)
+dictionary_remove(dictionary_t *dictionary, const char *key)
 {
   if (0 == dictionary->num_bucket) return;
 
-  size_t slot = _hashtable_genhash(kKey, dictionary->num_bucket);
+  size_t slot = _hashtable_genhash(key, dictionary->num_bucket);
 
-  dictionary_entry_st *entry = dictionary->bucket[slot];
-  dictionary_entry_st *entry_prev = NULL;
+  dictionary_entry_t *entry = dictionary->bucket[slot];
+  dictionary_entry_t *entry_prev = NULL;
   while (NULL != entry){
-    if (STREQ(entry->key, kKey)){
+    if (STREQ(entry->key, key)){
       if (NULL != entry_prev){
         entry_prev->next = entry->next; 
       } else {
@@ -311,10 +311,10 @@ dictionary_remove(dictionary_st *dictionary, const char *kKey)
 }
 
 void*
-dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value)
+dictionary_replace(dictionary_t *dictionary, const char *key, void *new_value)
 {
   /* this works, because dictionary and hashtable structs are aligned */
-  dictionary_entry_st *entry = (dictionary_entry_st*)_hashtable_get_entry((hashtable_st*)dictionary, kKey);
+  dictionary_entry_t *entry = (dictionary_entry_t*)_hashtable_get_entry((hashtable_t*)dictionary, key);
 
   if (entry->free_cb && NULL != entry->value){
     (*entry->free_cb)(entry->value);
@@ -326,9 +326,9 @@ dictionary_replace(dictionary_st *dictionary, const char *kKey, void *new_value)
 
 /* assume value is string and return its value converted to a long long */
 long long
-dictionary_get_strtoll(dictionary_st *dictionary, const char *kKey)
+dictionary_get_strtoll(dictionary_t *dictionary, const char *key)
 {
-  char *str = dictionary_get(dictionary, kKey);  
+  char *str = dictionary_get(dictionary, key);  
   if (NULL == str) return 0;
 
   return strtoll(str, NULL, 10);
@@ -336,9 +336,9 @@ dictionary_get_strtoll(dictionary_st *dictionary, const char *kKey)
 
 /* assume value is string and return its value converted to a double */
 double
-dictionary_get_strtod(dictionary_st *dictionary, const char *kKey)
+dictionary_get_strtod(dictionary_t *dictionary, const char *key)
 {
-  char *str = dictionary_get(dictionary, kKey);  
+  char *str = dictionary_get(dictionary, key);  
   if (NULL == str) return 0.0;
 
   return strtod(str, NULL);
