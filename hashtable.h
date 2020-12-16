@@ -24,14 +24,14 @@
 #define HASHTABLE_H_
 
 typedef struct hashtable_entry_s {
-	char *key; //this entry key tag
-	void *value; //this entry value
-	struct hashtable_entry_s *next; //next entry pointer for when keys don't match
+    char *key; //this entry key tag
+    void *value; //this entry value
+    struct hashtable_entry_s *next; //next entry pointer for when keys don't match
 } hashtable_entry_t;
 
 typedef struct hashtable_s {
-	hashtable_entry_t **bucket;
-	size_t num_bucket;
+    hashtable_entry_t **bucket;
+    size_t num_bucket;
 } hashtable_t;
 
 hashtable_t* hashtable_init();
@@ -42,19 +42,19 @@ void *hashtable_set(hashtable_t *hashtable, const char *key, const void *value);
 void hashtable_remove(hashtable_t *hashtable, const char *key);
 
 typedef struct dictionary_entry_s {
-	char *key; //this entry key tag
-	void *value; //this entry value
-	struct dictionary_entry_s *next; //next entry pointer for when keys don't match
-	void (*free_cb)(void*); //the destructor callback function for value, NULL if none
+    char *key; //this entry key tag
+    void *value; //this entry value
+    struct dictionary_entry_s *next; //next entry pointer for when keys don't match
+    void (*free_cb)(void*); //the destructor callback function for value, NULL if none
 } dictionary_entry_t;
 
 /* basically a hashtable with some extra functionalities
-	  it will allocate the key and free it up for you, also
-	  allows to pass a value that may be tagged for being freed */
+      it will allocate the key and free it up for you, also
+      allows to pass a value that may be tagged for being freed */
 typedef struct dictionary_s {
-	dictionary_entry_t **bucket;
-	size_t num_bucket;
-	size_t len;
+    dictionary_entry_t **bucket;
+    size_t num_bucket;
+    size_t len;
 } dictionary_t;
 
 dictionary_t* dictionary_init();
