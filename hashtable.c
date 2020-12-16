@@ -40,18 +40,18 @@ void
 hashtable_destroy(hashtable_t *hashtable)
 {
 	for (size_t i=0; i < hashtable->num_bucket; ++i){
-	  if (NULL == hashtable->bucket[i])
-	    continue;
+        if (NULL == hashtable->bucket[i])
+            continue;
 
-	  hashtable_entry_t *entry = hashtable->bucket[i];
-	  hashtable_entry_t *entry_prev;
-	  while (NULL != entry){
-	    entry_prev = entry;
-	    entry = entry->next;
+        hashtable_entry_t *entry = hashtable->bucket[i];
+        hashtable_entry_t *entry_prev;
+        while (NULL != entry){
+            entry_prev = entry;
+            entry = entry->next;
 
-	    free(entry_prev);
-	    entry_prev = NULL;
-	  }
+            free(entry_prev);
+            entry_prev = NULL;
+        }
 	}
 	free(hashtable->bucket);
 	hashtable->bucket = NULL;
@@ -68,7 +68,7 @@ _hashtable_genhash(const char *key, const size_t num_bucket)
 
 	//@todo learn different implementations and improvements
 	for (size_t i=0; i < key_len; ++i){
-	  slot = slot * 37 + key[i];
+        slot = slot * 37 + key[i];
 	}
 
 	slot %= num_bucket;
@@ -106,10 +106,10 @@ _hashtable_get_entry(hashtable_t *hashtable, const char *key)
 
 	hashtable_entry_t *entry = hashtable->bucket[slot];
 	while (NULL != entry){ //try to find key and return it
-	  if (0 == strcmp(entry->key, key)){
-	    return entry;
-	  }
-	  entry = entry->next;
+        if (0 == strcmp(entry->key, key)){
+            return entry;
+        }
+        entry = entry->next;
 	}
 
 	return NULL;
@@ -129,17 +129,17 @@ hashtable_set(hashtable_t *hashtable, const char *key, const void *value)
 
 	hashtable_entry_t *entry = hashtable->bucket[slot];
 	if (NULL == entry){
-	  hashtable->bucket[slot] = _hashtable_pair(key, value);
-	  return hashtable->bucket[slot]->value;
+        hashtable->bucket[slot] = _hashtable_pair(key, value);
+        return hashtable->bucket[slot]->value;
 	}
 
 	hashtable_entry_t *entry_prev;
 	while (NULL != entry){
-	  if (0 == strcmp(entry->key, key)){
-	    return entry->value;
-	  }
-	  entry_prev = entry;
-	  entry = entry->next;
+        if (0 == strcmp(entry->key, key)){
+            return entry->value;
+        }
+        entry_prev = entry;
+        entry = entry->next;
 	}
 
 	entry_prev->next = _hashtable_pair(key, value);
@@ -157,21 +157,21 @@ hashtable_remove(hashtable_t *hashtable, const char *key)
 	hashtable_entry_t *entry = hashtable->bucket[slot];
 	hashtable_entry_t *entry_prev = NULL;
 	while (NULL != entry){
-	  if (0 == strcmp(entry->key, key)){
-	    if (NULL != entry_prev){
-	      entry_prev->next = entry->next; 
-	    } else {
-	      hashtable->bucket[slot] = entry->next; 
-	    }
+        if (0 == strcmp(entry->key, key)){
+            if (NULL != entry_prev){
+                entry_prev->next = entry->next; 
+            } else {
+                hashtable->bucket[slot] = entry->next; 
+            }
 
-	    entry->key = NULL;
+            entry->key = NULL;
 
-	    free(entry);
-	    entry = NULL;
-	    return;
-	  }
-	  entry_prev = entry;
-	  entry = entry->next;
+            free(entry);
+            entry = NULL;
+            return;
+        }
+        entry_prev = entry;
+        entry = entry->next;
 	}
 }
 
@@ -189,26 +189,26 @@ void
 dictionary_destroy(dictionary_t *dictionary)
 {
 	for (size_t i=0; i < dictionary->num_bucket; ++i){
-	  if (NULL == dictionary->bucket[i])
-	    continue;
+        if (NULL == dictionary->bucket[i])
+            continue;
 
-	  dictionary_entry_t *entry = dictionary->bucket[i];
-	  dictionary_entry_t *entry_prev;
-	  while (NULL != entry){
-	    entry_prev = entry;
-	    entry = entry->next;
+        dictionary_entry_t *entry = dictionary->bucket[i];
+        dictionary_entry_t *entry_prev;
+        while (NULL != entry){
+            entry_prev = entry;
+            entry = entry->next;
 
-	    free(entry_prev->key);
-	    entry_prev->key = NULL;
-	    
-	    //free value if its tagged for freeing
-	    if (entry_prev->free_cb && NULL != entry_prev->value){
-	      (*entry_prev->free_cb)(entry_prev->value);
-	    }
+            free(entry_prev->key);
+            entry_prev->key = NULL;
 
-	    free(entry_prev);
-	    entry_prev = NULL;
-	  }
+            //free value if its tagged for freeing
+            if (entry_prev->free_cb && NULL != entry_prev->value){
+                (*entry_prev->free_cb)(entry_prev->value);
+            }
+
+            free(entry_prev);
+            entry_prev = NULL;
+        }
 	}
 	free(dictionary->bucket);
 	dictionary->bucket = NULL;
@@ -241,26 +241,26 @@ dictionary_set(dictionary_t *dictionary, const char *key, const void *value, voi
 
 	dictionary_entry_t *entry = dictionary->bucket[slot];
 	if (NULL == entry){
-	  dictionary->bucket[slot] = _dictionary_pair(key, value, free_cb);
-	  ++dictionary->len;
+        dictionary->bucket[slot] = _dictionary_pair(key, value, free_cb);
+        ++dictionary->len;
 
-	  return dictionary->bucket[slot]->value;
+        return dictionary->bucket[slot]->value;
 	}
 
 	dictionary_entry_t *entry_prev;
 	while (NULL != entry){
-	  if (0 == strcmp(entry->key, key)){
-	    if (entry->free_cb && NULL != entry->value){
-	      (*entry->free_cb)(entry->value);
-	    }
+        if (0 == strcmp(entry->key, key)){
+            if (entry->free_cb && NULL != entry->value){
+                (*entry->free_cb)(entry->value);
+            }
 
-	    entry->value = (void*)value;
-	    entry->free_cb = free_cb;
+            entry->value = (void*)value;
+            entry->free_cb = free_cb;
 
-	    return entry->value;
-	  }
-	  entry_prev = entry;
-	  entry = entry->next;
+            return entry->value;
+        }
+        entry_prev = entry;
+        entry = entry->next;
 	}
 
 	entry_prev->next = _dictionary_pair(key, value, free_cb);
@@ -279,30 +279,30 @@ dictionary_remove(dictionary_t *dictionary, const char *key)
 	dictionary_entry_t *entry = dictionary->bucket[slot];
 	dictionary_entry_t *entry_prev = NULL;
 	while (NULL != entry){
-	  if (0 == strcmp(entry->key, key)){
-	    if (NULL != entry_prev){
-	      entry_prev->next = entry->next; 
-	    } else {
-	      dictionary->bucket[slot] = entry->next; 
-	    }
+        if (0 == strcmp(entry->key, key)){
+            if (NULL != entry_prev){
+                entry_prev->next = entry->next; 
+            } else {
+                dictionary->bucket[slot] = entry->next; 
+            }
 
-	    free(entry->key);
-	    entry->key = NULL;
-	    
-	    //free value if its tagged for freeing
-	    if (entry->free_cb && NULL != entry->value){
-	      (*entry->free_cb)(entry->value);
-	    }
+            free(entry->key);
+            entry->key = NULL;
 
-	    free(entry);
-	    entry = NULL;
+            //free value if its tagged for freeing
+            if (entry->free_cb && NULL != entry->value){
+                (*entry->free_cb)(entry->value);
+            }
 
-	    --dictionary->len;
+            free(entry);
+            entry = NULL;
 
-	    return;
-	  }
-	  entry_prev = entry;
-	  entry = entry->next;
+            --dictionary->len;
+
+            return;
+        }
+        entry_prev = entry;
+        entry = entry->next;
 	}
 }
 
@@ -313,7 +313,7 @@ dictionary_replace(dictionary_t *dictionary, const char *key, void *new_value)
 	dictionary_entry_t *entry = (dictionary_entry_t*)_hashtable_get_entry((hashtable_t*)dictionary, key);
 
 	if (entry->free_cb && NULL != entry->value){
-	  (*entry->free_cb)(entry->value);
+        (*entry->free_cb)(entry->value);
 	}
 	entry->value = new_value;
 
