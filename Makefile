@@ -1,11 +1,12 @@
-CC = gcc
-CFLAGS = -Wall -Werror -pedantic -g
+CC = cc
 
-.PHONY : clean
+OBJS = oa_hash.o
 
-hashtable.o : hashtable.c
-	$(CC) -c -fPIC $< -o $@ $(CFLAGS)
+CFLAGS += -Wall -Wextra -Wpedantic -std=c89
 
-clean :
-	rm -f hashtable.o
+all: $(OBJS)
 
+clean:
+	rm -f $(OBJS)
+
+.PHONY : all clean

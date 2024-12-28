@@ -1,0 +1,11 @@
+# Ignore all
+*
+# But these
+!.gitignore
+!oa_hash.c
+!oa_hash.h
+!Makefile
+!README.md
+!LICENSE
+!test
+!.clang-format
