@@ -31,8 +31,10 @@ int main(void) {
     oa_hash_init(&ht, buckets, 64);
     
     // Store and retrieve values
-    oa_hash_set_entry(&ht, "key", 3, &value);
-    int *got = oa_hash_get_entry(&ht, "key", 3)->value;
+    oa_hash_set(&ht, "key", 3, &value);
+    int *got = oa_hash_get(&ht, "key", 3);
+
+    printf("Value: %d\n", *got); // 42
     
     // Cleanup (doesn't free memory - that's up to you)
     oa_hash_cleanup(&ht);

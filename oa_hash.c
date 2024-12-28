@@ -66,6 +66,13 @@ oa_hash_get_entry(struct oa_hash *ht, const char *key, const size_t key_len)
     return NULL;
 }
 
+void *
+oa_hash_get(struct oa_hash *ht, const char *key, const size_t key_len)
+{
+    struct oa_hash_entry *entry = oa_hash_get_entry(ht, key, key_len);
+    return entry ? entry->value : NULL;
+}
+
 struct oa_hash_entry *
 oa_hash_set_entry(struct oa_hash *ht,
                   const char *key,
@@ -111,6 +118,16 @@ oa_hash_set_entry(struct oa_hash *ht,
     } while (slot != start_slot);
 
     return NULL;
+}
+
+void *
+oa_hash_set(struct oa_hash *ht,
+            const char *key,
+            const size_t key_len,
+            void *value)
+{
+    struct oa_hash_entry *entry = oa_hash_set_entry(ht, key, key_len, value);
+    return entry ? entry->value : NULL;
 }
 
 int

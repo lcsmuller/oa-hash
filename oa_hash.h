@@ -58,6 +58,16 @@ struct oa_hash_entry *oa_hash_get_entry(struct oa_hash *ht,
                                         const size_t key_len);
 
 /**
+ * @brief Retrieve value by key (wrapper around oa_hash_get_entry)
+ *
+ * @param ht the hash table
+ * @param key the key to search for
+ * @param key_len the key length
+ * @return value if found, NULL otherwise
+ */
+void *oa_hash_get(struct oa_hash *ht, const char *key, const size_t key_len);
+
+/**
  * @brief Insert or update entry
  *
  * @param ht the hash table
@@ -71,6 +81,21 @@ struct oa_hash_entry *oa_hash_set_entry(struct oa_hash *ht,
                                         const char *key,
                                         const size_t key_len,
                                         void *value);
+
+/**
+ * @brief Insert or update entry (wrapper around oa_hash_set_entry)
+ *
+ * @param ht the hash table
+ * @param key the key to insert/update
+ * @param key_len the key length
+ * @param value the value to be assigned
+ * @return value if successful, or NULL if no space left, in which case
+ *     oa_hash_rehash() should be called
+ */
+void *oa_hash_set(struct oa_hash *ht,
+                  const char *key,
+                  const size_t key_len,
+                  void *value);
 
 /**
  * @brief Remove entry by key
@@ -93,10 +118,5 @@ int oa_hash_remove(struct oa_hash *ht, const char *key, const size_t key_len);
 int oa_hash_rehash(struct oa_hash *ht,
                    struct oa_hash_entry *new_buckets,
                    const size_t new_capacity);
-
-#define oa_hash_get(ht, key, key_len)                                         \
-    (oa_hash_get_entry((ht), (key), (key_len))->value)
-#define oa_hash_set(ht, key, key_len, value)                                  \
-    (oa_hash_set_entry((ht), (key), (key_len), (value))->value)
 
 #endif /* OA_HASH_H */
