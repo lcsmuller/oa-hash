@@ -3,8 +3,16 @@
 
 #include <stddef.h>
 
+/** @brief Hash table entry state */
+enum oa_hash_entry_state {
+    OA_HASH_ENTRY_EMPTY = 0, /**< empty entry */
+    OA_HASH_ENTRY_OCCUPIED, /**< occupied entry */
+    OA_HASH_ENTRY_DELETED /**< deleted entry */
+};
+
 /** @brief Entry holding key-value pair in hash table */
 struct oa_hash_entry {
+    enum oa_hash_entry_state state; /**< entry state */
     struct {
         const char *buf; /**< key buffer */
         size_t length; /**< key length */
