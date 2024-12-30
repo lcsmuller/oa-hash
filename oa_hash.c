@@ -160,7 +160,7 @@ oa_hash_remove(struct oa_hash *ht, const char *key, const size_t key_len)
     return 0;
 }
 
-int
+struct oa_hash_entry *
 oa_hash_rehash(struct oa_hash *ht,
                struct oa_hash_entry *new_buckets,
                const size_t new_capacity)
@@ -189,8 +189,8 @@ oa_hash_rehash(struct oa_hash *ht,
             ht->buckets = old_buckets;
             ht->capacity = old_capacity;
             ht->length = old_length;
-            return 0;
+            return NULL;
         }
     }
-    return 1;
+    return old_buckets;
 }

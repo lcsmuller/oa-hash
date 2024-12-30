@@ -113,10 +113,10 @@ int oa_hash_remove(struct oa_hash *ht, const char *key, const size_t key_len);
  * @param ht the hash table
  * @param new_buckets the new buckets array
  * @param new_capacity the new buckets capacity
- * @return 1 if successful, 0 if new_capacity <= current capacity
+ * @return pointer to old (now unused) bucket if successful, or NULL otherwise
  */
-int oa_hash_rehash(struct oa_hash *ht,
-                   struct oa_hash_entry *new_buckets,
-                   const size_t new_capacity);
+struct oa_hash_entry *oa_hash_rehash(struct oa_hash *ht,
+                                     struct oa_hash_entry *new_buckets,
+                                     const size_t new_capacity);
 
 #endif /* OA_HASH_H */

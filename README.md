@@ -17,28 +17,57 @@ This library implements a hash table using open addressing for collision resolut
 - C89 compatible
 - MIT licensed
 
-## Usage
+## Examples
+
+### Stack Allocation
 
 ```c
-#include "oa_hash.h"
+struct oa_hash ht;
+struct oa_hash_entry buckets[64] = {0}; // pre-allocated buckets
+int value = 42;
 
-int main(void) {
-    struct oa_hash ht;
-    struct oa_hash_entry buckets[64] = {0}; // pre-allocated buckets
-    int value = 42;
-    
-    // Initialize with pre-allocated buckets
-    oa_hash_init(&ht, buckets, 64);
-    
-    // Store and retrieve values
-    oa_hash_set(&ht, "key", 3, &value);
-    int *got = oa_hash_get(&ht, "key", 3);
+// Initialize with pre-allocated buckets
+oa_hash_init(&ht, buckets, 64);
 
-    printf("Value: %d\n", *got); // 42
-    
-    // Cleanup (doesn't free memory - that's up to you)
-    oa_hash_cleanup(&ht);
+// Store and retrieve values
+oa_hash_set(&ht, "key", 3, &value);
+int *got = oa_hash_get(&ht, "key", 3);
+
+printf("Value: %d\n", *got); // 42
+
+// Cleanup (doesn't free memory - that's up to you)
+oa_hash_cleanup(&ht);
+```
+
+### Dynamic Resizing
+
+```c
+struct oa_hash ht;
+struct oa_hash_entry *buckets;
+size_t capacity = 64;
+int value = 42;
+
+// Initial allocation
+buckets = malloc(capacity * sizeof(*buckets));
+oa_hash_init(&ht, buckets, capacity);
+
+// Add some values
+oa_hash_set(&ht, "key", 3, &value);
+
+// Time to grow the table
+struct oa_hash_entry *new_buckets = malloc(capacity * 2 * sizeof(*buckets));
+struct oa_hash_entry *old_buckets = oa_hash_rehash(&ht, new_buckets, capacity * 2);
+if (old_buckets) { // Rehash succeeded, free old buckets
+    assert(old_buckets == buckets); // old_buckets will always be the same as the original buckets
+    free(old_buckets);
+    buckets = new_buckets;
+} else { // Rehash failed, free new buckets
+    free(new_buckets);
 }
+
+// Cleanup
+oa_hash_cleanup(&ht);
+free(buckets);
 ```
 
 ## Memory Management
@@ -48,6 +77,10 @@ Unlike most hashtable implementations, this library:
 - Requires you to provide pre-allocated bucket arrays
 - Lets you choose allocation strategy (stack, heap, arena, etc)
 - Makes memory usage explicit and predictable
+
+When using dynamic allocation:
+- Free old buckets after successful rehash
+- Free new buckets if rehash fails
 
 ## Build
 
