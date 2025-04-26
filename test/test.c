@@ -34,7 +34,7 @@ TEST
 test_set_get(void)
 {
     int value = 42;
-    struct oa_hash_entry *entry;
+    const struct oa_hash_entry *entry;
 
     entry = oa_hash_set_entry(&ht, "key", 3, &value);
     ASSERT(entry != NULL);
@@ -51,7 +51,7 @@ TEST
 test_collision(void)
 {
     int val1 = 1, val2 = 2;
-    struct oa_hash_entry *entry;
+    const struct oa_hash_entry *entry;
 
     /* Insert first value */
     entry = oa_hash_set_entry(&ht, "test", 4, &val1);
@@ -77,7 +77,7 @@ TEST
 test_remove(void)
 {
     int value = 42;
-    struct oa_hash_entry *entry;
+    const struct oa_hash_entry *entry;
 
     /* Insert and verify */
     entry = oa_hash_set_entry(&ht, "key", 3, &value);
@@ -98,14 +98,14 @@ test_rehash(void)
 {
     int value = 42;
     struct oa_hash_entry new_buckets[BUCKETS_SIZE * 2] = { 0 };
-    struct oa_hash_entry *entry;
+    const struct oa_hash_entry *entry;
 
     /* Insert initial value */
     entry = oa_hash_set_entry(&ht, "key", 3, &value);
     ASSERT(entry != NULL);
 
     /* Rehash to larger table */
-    ASSERT_EQ(1, oa_hash_rehash(&ht, new_buckets, BUCKETS_SIZE * 2));
+    ASSERT_EQ(buckets, oa_hash_rehash(&ht, new_buckets, BUCKETS_SIZE * 2));
 
     /* Verify value still accessible */
     entry = oa_hash_get_entry(&ht, "key", 3);
@@ -133,7 +133,7 @@ TEST
 test_linear_probing_wraparound(void)
 {
     int val1 = 1, val2 = 2;
-    struct oa_hash_entry *entry;
+    const struct oa_hash_entry *entry;
 
     // Force hash collision by using same hash value
     entry = oa_hash_set_entry(&ht, "cw", 2, &val1);
@@ -161,7 +161,7 @@ TEST
 test_key_length_handling(void)
 {
     int val1 = 1, val2 = 2;
-    struct oa_hash_entry *entry;
+    const struct oa_hash_entry *entry;
 
     // Insert key with embedded null bytes
     entry = oa_hash_set_entry(&ht, "u\0a", 3, &val1);
@@ -187,7 +187,7 @@ TEST
 test_lookup_stops_at_empty(void)
 {
     int val = 42;
-    struct oa_hash_entry *entry;
+    const struct oa_hash_entry *entry;
     size_t i;
 
     // Fill first few slots
@@ -206,8 +206,8 @@ test_lookup_stops_at_empty(void)
 TEST
 test_deletion_with_gravestones(void)
 {
+    const struct oa_hash_entry *entry;
     int val1 = 1, val2 = 2;
-    struct oa_hash_entry *entry;
 
     // Insert two entries that may collide
     ASSERT(oa_hash_set_entry(&ht, "test1", 5, &val1) != NULL);

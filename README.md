@@ -1,6 +1,6 @@
 # oa_hash
 
-A lightweight open-addressing hashtable implementation in C that gives complete memory allocation control to the user.
+A lightweight single-header open-addressing hashtable implementation in C that gives complete memory allocation control to the user.
 
 ## About
 
@@ -13,7 +13,7 @@ This library implements a hash table using open addressing for collision resolut
 - String keys with explicit lengths
 - Generic void* values
 - Simple and minimal API
-- Single header/source pair
+- Single header library
 - C89 compatible
 - MIT licensed
 
@@ -84,9 +84,15 @@ When using dynamic allocation:
 
 ## Build
 
-```bash
-make        # Build library
-make clean  # Clean build artifacts
+oa_has is single-header-only library, so it includes additional macros for more complex uses cases. `#define OA_HASH_STATIC` hides all oa_hash API symbols by making them static. Also, if you want to include `oa_hash.h` from multiple C files, to avoid duplication of symbols you may define `OA_HASH_HEADER` macro.
+
+```c
+/* In every .c file that uses jsmn include only declarations: */
+#define OA_HASH_HEADER
+#include "oa_hash.h"
+
+/* Additionally, create one oa_hash.c file for oa_hash.c implementation: */
+#include "oa_hash.h"
 ```
 
 ## License
