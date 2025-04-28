@@ -135,17 +135,17 @@ test_linear_probing_wraparound(void)
     int val1 = 1, val2 = 2;
     const struct oa_hash_entry *entry;
 
-    // Force hash collision by using same hash value
+    /* Force hash collision by using same hash value */
     entry = oa_hash_set_entry(&ht, "cw", 2, &val1);
     ASSERT(entry != NULL);
     ASSERT_EQ(&val1, entry->value);
 
-    // Should wrap around and find next empty slot
+    /* Should wrap around and find next empty slot */
     entry = oa_hash_set_entry(&ht, "wc", 2, &val2);
     ASSERT(entry != NULL);
     ASSERT_EQ(&val2, entry->value);
 
-    // Verify both values are still accessible
+    /* Verify both values are still accessible */
     entry = oa_hash_get_entry(&ht, "cw", 2);
     ASSERT(entry != NULL);
     ASSERT_EQ(&val1, entry->value);
@@ -163,15 +163,15 @@ test_key_length_handling(void)
     int val1 = 1, val2 = 2;
     const struct oa_hash_entry *entry;
 
-    // Insert key with embedded null bytes
+    /* Insert key with embedded null bytes */
     entry = oa_hash_set_entry(&ht, "u\0a", 3, &val1);
     ASSERT(entry != NULL);
 
-    // Different key with same prefix should not match
+    /* Different key with same prefix should not match */
     entry = oa_hash_set_entry(&ht, "u\0b", 3, &val2);
     ASSERT(entry != NULL);
 
-    // Verify correct value is returned
+    /* Verify correct value is returned */
     entry = oa_hash_get_entry(&ht, "u\0a", 3);
     ASSERT(entry != NULL);
     ASSERT_EQ(&val1, entry->value);
@@ -190,13 +190,14 @@ test_lookup_stops_at_empty(void)
     const struct oa_hash_entry *entry;
     size_t i;
 
-    // Fill first few slots
+    /* Fill first few slots */
     for (i = 0; i < 3; i++) {
-        char key[2] = { 'a' + i, '\0' };
+        char key[2] = { 'a', '\0' };
+        key[0] += i;
         ASSERT(oa_hash_set_entry(&ht, key, 1, &val) != NULL);
     }
 
-    // Lookup of non-existent key should stop at first empty slot
+    /* Lookup of non-existent key should stop at first empty slot */
     entry = oa_hash_get_entry(&ht, "test", 4);
     ASSERT(entry == NULL);
 
@@ -209,19 +210,19 @@ test_deletion_with_gravestones(void)
     const struct oa_hash_entry *entry;
     int val1 = 1, val2 = 2;
 
-    // Insert two entries that may collide
+    /* Insert two entries that may collide */
     ASSERT(oa_hash_set_entry(&ht, "test1", 5, &val1) != NULL);
     ASSERT(oa_hash_set_entry(&ht, "test2", 5, &val2) != NULL);
 
-    // Remove first entry
+    /* Remove first entry */
     ASSERT(oa_hash_remove(&ht, "test1", 5));
 
-    // Second entry should still be accessible
+    /* Second entry should still be accessible */
     entry = oa_hash_get_entry(&ht, "test2", 5);
     ASSERT(entry != NULL);
     ASSERT_EQ(&val2, entry->value);
 
-    // Verify first entry slot is marked as deleted
+    /* Verify first entry slot is marked as deleted */
     entry = oa_hash_get_entry(&ht, "test1", 5);
     ASSERT(entry == NULL);
 

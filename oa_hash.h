@@ -30,11 +30,20 @@ struct oa_hash_entry {
     void *value; /**< value pointer */
 };
 
+#define __OA_HASH_ATTRS_const                                                 \
+    const size_t length; /**< amount of entries */                            \
+    const size_t capacity; /**< total buckets capacity */                     \
+    const struct oa_hash_entry *buckets /**< entries array */
+#define __OA_HASH_ATTRS_mut                                                   \
+    size_t length; /**< amount of entries */                                  \
+    size_t capacity; /**< total buckets capacity */                           \
+    struct oa_hash_entry *buckets /**< entries array */
+/** @brief can be used to cast to struct oa_hash */
+#define OA_HASH_ATTRS(_qualifier) __OA_HASH_ATTRS_##_qualifier
+
 /** @brief Open addressing hash table */
 struct oa_hash {
-    size_t length; /**< amount of entries */
-    size_t capacity; /**< total buckets capacity */
-    struct oa_hash_entry *buckets; /**< entries array */
+    OA_HASH_ATTRS(mut);
 };
 
 /**

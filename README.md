@@ -70,6 +70,75 @@ oa_hash_cleanup(&ht);
 free(buckets);
 ```
 
+### Embedded Hash Table
+
+The library provides a flexible way to embed hash table fields directly into your own structures using the `OA_HASH_ATTRS` macro. This is useful for:
+
+1. Embedding hash tables inside larger structures
+2. Creating read-only views of existing hash tables
+3. Custom memory layouts while maintaining API compatibility
+
+#### Example: Read-Only Hash Table View
+
+```c
+/* Define a read-only view of a hash table */
+struct oa_hash_view {
+    OA_HASH_ATTRS(const); /* const qualifier for read-only access */
+};
+
+void print_hash_stats(const struct oa_hash *ht) {
+    /* Cast to read-only view for safer access */
+    const struct oa_hash_view *view = (const struct oa_hash_view*)ht;
+
+    printf("Hash table stats:\n");
+    printf("  Entries: %zu\n", view->length);
+    printf("  Capacity: %zu\n", view->capacity);
+    printf("  Load factor: %.2f\n", (double)view->length / view->capacity);
+}
+```
+
+#### Example: Custom Structure with Embedded Hash Table
+
+```c
+/* Structure with embedded hash table */
+struct my_dictionary {
+    OA_HASH_ATTRS(mut); /* Mutable hash table fields, must be first attribute */
+    char *name;
+    void (*on_insert)(const char *key);
+};
+
+/* Initialize dictionary with embedded hash table */
+void dictionary_init(struct my_dictionary *dict,
+                    const char *name,
+                    struct oa_hash_entry buckets[],
+                    size_t capacity)
+{
+    dict->name = strdup(name);
+    dict->buckets = buckets;
+    dict->capacity = capacity;
+    dict->length = 0;
+    dict->on_insert = NULL;
+
+    memset(buckets, 0, sizeof(struct oa_hash_entry) * capacity);
+}
+
+/* Use regular oa_hash functions by casting */
+void dictionary_insert(struct my_dictionary *dict,
+                      const char *key,
+                      size_t key_len,
+                      void *value)
+{
+    struct oa_hash *ht = (struct oa_hash*)dict;
+    oa_hash_set(ht, key, key_len, value);
+
+    if (dict->on_insert) {
+        dict->on_insert(key);
+    }
+}
+```
+
+The macro allows for seamless casting between compatible structures while maintaining type safety with the specified qualifiers.
+
 ## Memory Management
 
 Unlike most hashtable implementations, this library:
