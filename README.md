@@ -153,14 +153,14 @@ When using dynamic allocation:
 
 ## Build
 
-oa_has is single-header-only library, so it includes additional macros for more complex uses cases. `#define OA_HASH_STATIC` hides all oa_hash API symbols by making them static. Also, if you want to include `oa_hash.h` from multiple C files, to avoid duplication of symbols you may define `OA_HASH_HEADER` macro.
+oa_hash is single-header-only library, so it includes additional macros for more complex uses cases. `#define OA_HASH_STATIC` hides all oa_hash API symbols by making them static. Also, if you want to include `oa_hash.h` from multiple C files, to avoid duplication of symbols you may define `OA_HASH_HEADER` macro.
 
 ```c
-/* In every .c file that uses jsmn include only declarations: */
+/* In every .c file that uses oa_hash include only declarations: */
 #define OA_HASH_HEADER
 #include "oa_hash.h"
 
-/* Additionally, create one oa_hash.c file for oa_hash.c implementation: */
+/* Additionally, create one oa_hash.c file for oa_hash implementation: */
 #include "oa_hash.h"
 ```
 
