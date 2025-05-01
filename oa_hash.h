@@ -17,7 +17,8 @@ extern "C" {
 enum oa_hash_entry_state {
     OA_HASH_ENTRY_EMPTY = 0, /**< empty entry */
     OA_HASH_ENTRY_OCCUPIED, /**< occupied entry */
-    OA_HASH_ENTRY_DELETED /**< deleted entry */
+    OA_HASH_ENTRY_DELETED, /**< deleted entry */
+    OA_HASH_ENTRY_RELOCATE /**< relocating in overlapped rehash */
 };
 
 /** @brief Entry holding key-value pair in hash table */
@@ -309,28 +310,66 @@ oa_hash_rehash(struct oa_hash *ht,
     struct oa_hash_entry *old_buckets = ht->buckets;
     const size_t old_capacity = ht->capacity;
     const size_t old_length = ht->length;
+    const ptrdiff_t start_offset = new_buckets - old_buckets,
+                    end_offset = new_buckets + new_capacity - old_buckets;
     size_t i;
 
-    if (!new_buckets || new_capacity <= old_capacity) return 0;
-
-    memset(new_buckets, 0, sizeof(struct oa_hash_entry) * new_capacity);
+    if (!new_buckets) return NULL;
 
     /* temporarily switch to new buckets */
     ht->buckets = new_buckets;
     ht->capacity = new_capacity;
     ht->length = 0;
 
-    for (i = 0; i < old_capacity; ++i) {
-        if (old_buckets[i].state == OA_HASH_ENTRY_OCCUPIED
-            && !oa_hash_set_entry(ht, old_buckets[i].key.buf,
-                                  old_buckets[i].key.length,
-                                  old_buckets[i].value))
-        {
-            /* restore original state on failure */
-            ht->buckets = old_buckets;
-            ht->capacity = old_capacity;
-            ht->length = old_length;
-            return NULL;
+    /* Check for overlapping memory regions */
+    if (start_offset <= 0 && end_offset <= 0) {
+        memset(new_buckets, 0, sizeof(struct oa_hash_entry) * -start_offset);
+        memset(new_buckets + old_capacity, 0,
+               sizeof(struct oa_hash_entry) * end_offset);
+        for (i = 0; i < old_capacity; ++i) {
+            if (old_buckets[i].state == OA_HASH_ENTRY_OCCUPIED) {
+                old_buckets[i].state = OA_HASH_ENTRY_RELOCATE;
+            }
+        }
+        for (i = 0; i < old_capacity; ++i) {
+            if (old_buckets[i].state == OA_HASH_ENTRY_RELOCATE) {
+                if (!oa_hash_set_entry(ht, old_buckets[i].key.buf,
+                                       old_buckets[i].key.length,
+                                       old_buckets[i].value))
+                {
+                    size_t j;
+                    for (j = 0; j < new_capacity; ++j) {
+                        if (new_buckets[j].state == OA_HASH_ENTRY_OCCUPIED) {
+                            new_buckets[j].state = OA_HASH_ENTRY_EMPTY;
+                        }
+                    }
+                    for (j = 0; j < old_capacity; ++j) {
+                        if (old_buckets[j].state == OA_HASH_ENTRY_RELOCATE) {
+                            old_buckets[j].state = OA_HASH_ENTRY_OCCUPIED;
+                        }
+                    }
+                    ht->buckets = old_buckets;
+                    ht->capacity = old_capacity;
+                    ht->length = old_length;
+                    return NULL;
+                }
+            }
+        }
+    }
+    else {
+        memset(new_buckets, 0, sizeof(struct oa_hash_entry) * new_capacity);
+        for (i = 0; i < old_capacity; ++i) {
+            if (old_buckets[i].state == OA_HASH_ENTRY_OCCUPIED
+                && !oa_hash_set_entry(ht, old_buckets[i].key.buf,
+                                      old_buckets[i].key.length,
+                                      old_buckets[i].value))
+            {
+                /* restore original state on failure */
+                ht->buckets = old_buckets;
+                ht->capacity = old_capacity;
+                ht->length = old_length;
+                return NULL;
+            }
         }
     }
     return old_buckets;
